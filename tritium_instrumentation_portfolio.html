@@ -1,0 +1,1311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ISOTRACE — Tritium Fuel Cycle Instrumentation Portfolio</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,700;1,9..40,300&display=swap');
+
+  :root {
+    --bg: #070b0f;
+    --bg2: #0d1419;
+    --bg3: #131c24;
+    --border: rgba(0,210,180,0.12);
+    --accent: #00d2b4;
+    --accent2: #ff6b35;
+    --accent3: #a78bfa;
+    --text: #e2eaf0;
+    --text-dim: #7a9aae;
+    --text-faint: #3a5566;
+    --danger: #ff4444;
+    --warn: #ffaa00;
+    --safe: #00d2b4;
+    --tier1: #ff6b35;
+    --tier2: #a78bfa;
+    --tier3: #00d2b4;
+    --grid: rgba(0,210,180,0.04);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
+
+  /* Grid background */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(var(--grid) 1px, transparent 1px),
+      linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+    background-size: 48px 48px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* Glow top */
+  body::after {
+    content: '';
+    position: fixed;
+    top: -200px; left: 50%;
+    transform: translateX(-50%);
+    width: 800px; height: 400px;
+    background: radial-gradient(ellipse, rgba(0,210,180,0.06) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .wrap { position: relative; z-index: 1; max-width: 1100px; margin: 0 auto; padding: 0 24px; }
+
+  /* ── HEADER ── */
+  header {
+    border-bottom: 1px solid var(--border);
+    padding: 48px 0 40px;
+  }
+
+  .logo-row {
+    display: flex;
+    align-items: baseline;
+    gap: 16px;
+    margin-bottom: 8px;
+  }
+
+  .logo {
+    font-family: 'Space Mono', monospace;
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--accent);
+    letter-spacing: 4px;
+  }
+
+  .logo-sub {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    color: var(--text-faint);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+
+  .tagline {
+    font-size: 13px;
+    color: var(--text-dim);
+    font-family: 'Space Mono', monospace;
+    margin-top: 4px;
+  }
+
+  .header-meta {
+    margin-top: 32px;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1px;
+    background: var(--border);
+  }
+
+  .meta-cell {
+    background: var(--bg);
+    padding: 16px 20px;
+  }
+
+  .meta-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 2px;
+    color: var(--text-faint);
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+
+  .meta-value {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--accent);
+  }
+
+  .meta-value.orange { color: var(--accent2); }
+  .meta-value.purple { color: var(--accent3); }
+
+  /* ── SECTION HEADERS ── */
+  .section-header {
+    padding: 48px 0 24px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .section-number {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    color: var(--text-faint);
+    letter-spacing: 2px;
+  }
+
+  .section-title {
+    font-size: 22px;
+    font-weight: 300;
+    color: var(--text);
+    letter-spacing: 1px;
+  }
+
+  .section-title strong { color: var(--accent); font-weight: 700; }
+  .section-line { flex: 1; height: 1px; background: var(--border); }
+
+  /* ── STRATEGY BAR ── */
+  .strategy-box {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    padding: 24px 28px;
+    margin-bottom: 40px;
+  }
+
+  .strategy-box p { color: var(--text-dim); font-size: 14px; line-height: 1.7; }
+  .strategy-box p + p { margin-top: 10px; }
+  .strategy-box strong { color: var(--text); }
+
+  /* ── TIER LABELS ── */
+  .tier-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    padding: 4px 12px;
+    border-radius: 2px;
+    margin-bottom: 20px;
+  }
+
+  .tier-label.t1 { background: rgba(255,107,53,0.1); color: var(--tier1); border: 1px solid rgba(255,107,53,0.3); }
+  .tier-label.t2 { background: rgba(167,139,250,0.1); color: var(--tier2); border: 1px solid rgba(167,139,250,0.3); }
+  .tier-label.t3 { background: rgba(0,210,180,0.1); color: var(--tier3); border: 1px solid rgba(0,210,180,0.3); }
+
+  /* ── PRODUCT CARDS ── */
+  .product-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+
+  .product-grid.single { grid-template-columns: 1fr; }
+  .product-grid.triple { grid-template-columns: 1fr 1fr 1fr; }
+
+  .card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    padding: 28px;
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.2s;
+  }
+
+  .card:hover { border-color: rgba(0,210,180,0.3); }
+
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+  }
+
+  .card.t1::before { background: var(--tier1); }
+  .card.t2::before { background: var(--tier2); }
+  .card.t3::before { background: var(--tier3); }
+
+  .card-code {
+    font-family: 'Space Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 3px;
+    color: var(--text-faint);
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+
+  .card-name {
+    font-size: 17px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 6px;
+    line-height: 1.3;
+  }
+
+  .card-subtitle {
+    font-size: 12px;
+    color: var(--text-dim);
+    margin-bottom: 16px;
+    font-style: italic;
+  }
+
+  .card-desc {
+    font-size: 13.5px;
+    color: var(--text-dim);
+    line-height: 1.65;
+    margin-bottom: 20px;
+  }
+
+  .card-desc strong { color: var(--text); }
+
+  /* Spec table */
+  .spec-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 16px;
+  }
+
+  .spec-table tr { border-bottom: 1px solid rgba(255,255,255,0.04); }
+  .spec-table tr:last-child { border-bottom: none; }
+
+  .spec-table td {
+    padding: 5px 0;
+    font-size: 12px;
+  }
+
+  .spec-table td:first-child {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    color: var(--text-faint);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    width: 40%;
+    padding-right: 12px;
+  }
+
+  .spec-table td:last-child { color: var(--text-dim); }
+
+  /* Tags */
+  .tag-row { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
+
+  .tag {
+    font-family: 'Space Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 1px;
+    padding: 3px 8px;
+    border-radius: 2px;
+    background: rgba(255,255,255,0.04);
+    color: var(--text-faint);
+    border: 1px solid rgba(255,255,255,0.06);
+  }
+
+  .tag.green { background: rgba(0,210,180,0.06); color: var(--accent); border-color: rgba(0,210,180,0.2); }
+  .tag.orange { background: rgba(255,107,53,0.06); color: var(--accent2); border-color: rgba(255,107,53,0.2); }
+  .tag.purple { background: rgba(167,139,250,0.06); color: var(--accent3); border-color: rgba(167,139,250,0.2); }
+
+  /* Readiness bar */
+  .readiness {
+    margin-top: 16px;
+  }
+
+  .readiness-label {
+    display: flex;
+    justify-content: space-between;
+    font-family: 'Space Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 1px;
+    color: var(--text-faint);
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+
+  .bar-bg {
+    height: 3px;
+    background: rgba(255,255,255,0.06);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  .bar-fill {
+    height: 100%;
+    border-radius: 2px;
+    transition: width 1s ease;
+  }
+
+  .bar-fill.t1 { background: var(--tier1); }
+  .bar-fill.t2 { background: var(--tier2); }
+  .bar-fill.t3 { background: var(--tier3); }
+
+  /* Revenue card */
+  .revenue-pill {
+    display: inline-block;
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--accent);
+    border: 1px solid rgba(0,210,180,0.3);
+    padding: 4px 10px;
+    border-radius: 2px;
+    margin-top: 8px;
+  }
+
+  /* ── ROADMAP ── */
+  .roadmap {
+    display: grid;
+    grid-template-columns: 120px 1fr;
+    gap: 0;
+    margin: 8px 0 40px;
+    position: relative;
+  }
+
+  .roadmap::before {
+    content: '';
+    position: absolute;
+    left: 119px; top: 0; bottom: 0;
+    width: 1px;
+    background: var(--border);
+  }
+
+  .roadmap-phase {
+    padding: 20px 0;
+    border-top: 1px solid rgba(255,255,255,0.04);
+    display: contents;
+  }
+
+  .phase-time {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 2px;
+    color: var(--text-faint);
+    text-transform: uppercase;
+    padding: 20px 0 20px 0;
+    border-top: 1px solid rgba(255,255,255,0.04);
+    position: relative;
+  }
+
+  .phase-time::after {
+    content: '';
+    position: absolute;
+    right: -5px; top: 50%;
+    width: 9px; height: 9px;
+    border-radius: 50%;
+    background: var(--bg);
+    border: 2px solid var(--accent);
+    transform: translateY(-50%);
+  }
+
+  .phase-content {
+    padding: 20px 0 20px 32px;
+    border-top: 1px solid rgba(255,255,255,0.04);
+  }
+
+  .phase-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 8px;
+  }
+
+  .phase-items {
+    list-style: none;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .phase-items li {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 1px;
+    padding: 4px 10px;
+    border-radius: 2px;
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+  }
+
+  .phase-items li.launch { background: rgba(0,210,180,0.08); color: var(--accent); border-color: rgba(0,210,180,0.3); }
+  .phase-items li.dev { background: rgba(167,139,250,0.06); color: var(--accent3); border-color: rgba(167,139,250,0.2); }
+  .phase-items li.research { background: rgba(255,107,53,0.06); color: var(--accent2); border-color: rgba(255,107,53,0.2); }
+
+  /* ── MARKET TABLE ── */
+  .market-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 40px;
+  }
+
+  .market-table th {
+    font-family: 'Space Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--text-faint);
+    text-align: left;
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--border);
+    font-weight: 400;
+  }
+
+  .market-table td {
+    padding: 12px 16px;
+    font-size: 13px;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    vertical-align: top;
+  }
+
+  .market-table tr:hover td { background: rgba(255,255,255,0.02); }
+
+  .market-table td:first-child {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    color: var(--accent);
+    letter-spacing: 1px;
+    white-space: nowrap;
+  }
+
+  .tam { font-weight: 700; color: var(--text); }
+  .trl-dot {
+    display: inline-block;
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    margin-right: 6px;
+  }
+  .trl-low { background: var(--danger); }
+  .trl-mid { background: var(--warn); }
+  .trl-high { background: var(--safe); }
+
+  /* ── BUSINESS MODEL ── */
+  .biz-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1px;
+    background: var(--border);
+    margin-bottom: 40px;
+  }
+
+  .biz-cell {
+    background: var(--bg2);
+    padding: 24px;
+  }
+
+  .biz-icon {
+    font-size: 28px;
+    margin-bottom: 12px;
+  }
+
+  .biz-title {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    margin-bottom: 8px;
+  }
+
+  .biz-desc {
+    font-size: 13px;
+    color: var(--text-dim);
+    line-height: 1.6;
+  }
+
+  /* ── COMPETITIVE MOAT ── */
+  .moat-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 1px;
+    background: var(--border);
+    margin-bottom: 40px;
+  }
+
+  .moat-cell {
+    background: var(--bg2);
+    padding: 20px 16px;
+    text-align: center;
+  }
+
+  .moat-score {
+    font-family: 'Space Mono', monospace;
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--accent);
+    display: block;
+    margin-bottom: 6px;
+  }
+
+  .moat-label {
+    font-size: 11px;
+    color: var(--text-faint);
+    line-height: 1.4;
+  }
+
+  /* ── RISK TABLE ── */
+  .risk-row {
+    display: grid;
+    grid-template-columns: 200px 1fr 100px;
+    gap: 16px;
+    padding: 12px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    align-items: start;
+  }
+
+  .risk-name { font-size: 13px; color: var(--text); font-weight: 500; }
+  .risk-desc { font-size: 12.5px; color: var(--text-dim); }
+  .risk-level {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 1px;
+    text-align: right;
+  }
+  .risk-level.high { color: var(--danger); }
+  .risk-level.med { color: var(--warn); }
+  .risk-level.low { color: var(--safe); }
+
+  /* ── FOOTER ── */
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 32px 0 48px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 40px;
+  }
+
+  .footer-logo {
+    font-family: 'Space Mono', monospace;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--accent);
+    letter-spacing: 4px;
+  }
+
+  .footer-note {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    color: var(--text-faint);
+    letter-spacing: 1px;
+  }
+
+  /* Divider */
+  .divider {
+    height: 1px;
+    background: var(--border);
+    margin: 8px 0 32px;
+  }
+
+  @media (max-width: 768px) {
+    .product-grid, .product-grid.triple { grid-template-columns: 1fr; }
+    .header-meta { grid-template-columns: 1fr 1fr; }
+    .biz-grid, .moat-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- HEADER -->
+  <header>
+    <div class="logo-row">
+      <span class="logo">ISOTRACE</span>
+      <span class="logo-sub">Tritium Instrumentation & Control</span>
+    </div>
+    <div class="tagline">// Product Portfolio v1.0 — Tritium Fuel Cycle Instrumentation for Fusion Power Plants</div>
+
+    <div class="header-meta">
+      <div class="meta-cell">
+        <div class="meta-label">Products</div>
+        <div class="meta-value">12</div>
+      </div>
+      <div class="meta-cell">
+        <div class="meta-label">Total Addressable Market</div>
+        <div class="meta-value orange">$380M</div>
+      </div>
+      <div class="meta-cell">
+        <div class="meta-label">Launch-Ready Products</div>
+        <div class="meta-value">4</div>
+      </div>
+      <div class="meta-cell">
+        <div class="meta-label">Target Customers</div>
+        <div class="meta-value purple">43+</div>
+      </div>
+    </div>
+  </header>
+
+  <!-- STRATEGY -->
+  <div class="section-header">
+    <span class="section-number">00</span>
+    <h2 class="section-title">Strategic <strong>Rationale</strong></h2>
+    <div class="section-line"></div>
+  </div>
+
+  <div class="strategy-box">
+    <p><strong>The core insight:</strong> Every fusion company building a D-T fuel cycle faces the same instrumentation and control problem. The components needed — valves, sensors, gauges, monitors — are standard industrial products. But <strong>none of the standard versions work with tritium.</strong> Beta decay destroys organics. Tritium permeates through plastics and most metals. Electronics fail in radiation fields. The entire COTS instrument supply chain simply doesn't exist for this environment.</p>
+    <p>ISOTRACE builds the tritium-compatible instrumentation layer that sits between the process components (pumps, separation columns, storage beds) and the plant control system. We are not competing with Kyoto Fusioneering — we are supplying them. Every fuel cycle system they build needs dozens of our instruments.</p>
+    <p><strong>Business model:</strong> Component sales (hardware), software licenses (digital twin / accountancy platform), and long-term service/recalibration contracts. First revenue from existing nuclear tritium facilities (CANDU operators, Savannah River), then fusion test facilities (UNITY-2), then first-of-a-kind fusion pilot plants from 2030 onward.</p>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════
+       TIER 1 — LAUNCH NOW
+  ══════════════════════════════════════════════════ -->
+  <div class="section-header">
+    <span class="section-number">01</span>
+    <h2 class="section-title">Tier 1 — <strong>Launch Now</strong></h2>
+    <div class="section-line"></div>
+  </div>
+
+  <div class="tier-label t1">⬤ Tier 1 &nbsp;·&nbsp; Revenue in 12–24 months &nbsp;·&nbsp; Engineering problems, known physics</div>
+
+  <div class="strategy-box">
+    <p>These products address gaps that exist <em>today</em> in operating tritium facilities — CANDU operators, Savannah River, JET decommissioning, and ITER commissioning. Revenue does not require fusion power plants to exist. TRL entry point is high (3–4), meaning proof-of-concept science is done and you are engineering toward a product.</p>
+  </div>
+
+  <!-- T1 Products -->
+  <div class="product-grid">
+
+    <div class="card t1">
+      <div class="card-code">ISO-PG01 · Pressure Gauge</div>
+      <div class="card-name">All-Metal Capacitance Manometer</div>
+      <div class="card-subtitle">Tritium-compatible absolute pressure measurement, 0.001–1000 Torr</div>
+      <div class="card-desc">Standard capacitance manometers use polymer diaphragm coatings and elastomeric seals that tritium permeates and destroys within weeks. <strong>ISO-PG01 uses an Inconel diaphragm, all-stainless wetted surfaces, and metal-to-metal VCR fittings.</strong> Electronics are housed in a remote enclosure 2m from the measurement head, connected by radiation-hard cabling. Fills the gap left by the discontinuation of the MKS Baratron tritium variant.</div>
+      <table class="spec-table">
+        <tr><td>Range</td><td>0.001 – 1,000 Torr (3 interchangeable heads)</td></tr>
+        <tr><td>Accuracy</td><td>±0.15% of reading</td></tr>
+        <tr><td>Materials</td><td>316L SS body, Inconel 625 diaphragm</td></tr>
+        <tr><td>Seal type</td><td>Metal VCR face seal (zero elastomers)</td></tr>
+        <tr><td>Radiation</td><td>Electronics rated to 10⁵ Gy total dose</td></tr>
+      </table>
+      <div class="readiness">
+        <div class="readiness-label"><span>Development Readiness</span><span>TRL 4 → 7</span></div>
+        <div class="bar-bg"><div class="bar-fill t1" style="width:60%"></div></div>
+      </div>
+      <div class="tag-row">
+        <span class="tag green">Immediate Market</span>
+        <span class="tag">CANDU</span>
+        <span class="tag">ITER</span>
+        <span class="tag">UNITY-2</span>
+      </div>
+      <div class="revenue-pill">TAM ~$18M</div>
+    </div>
+
+    <div class="card t1">
+      <div class="card-code">ISO-VB02 · Valve</div>
+      <div class="card-name">Bellows-Sealed Tritium Valve</div>
+      <div class="card-subtitle">Manual and pneumatic actuated, ¼" to 2" line sizes</div>
+      <div class="card-desc"><strong>The single most-needed component in any tritium facility.</strong> Standard valves use PTFE or PEEK seats and elastomeric stem seals — both fail rapidly in tritium. Current supply comes from Rotarex (France) and a handful of nuclear specialists, all with 20+ week lead times and no fusion-scale qualification data. ISO-VB02 uses a metal bellows stem seal with 316L SS body, stellite-tipped seats, and pneumatic actuation for remote operation. Available in manual, pneumatic, and solenoid configurations. <strong>Direct Normetex-era replacement with fusion-service certification.</strong></div>
+      <table class="spec-table">
+        <tr><td>Sizes</td><td>¼", ½", 1", 2" (VCR and conflat flanges)</td></tr>
+        <tr><td>Pressure</td><td>Full vacuum to 100 bar</td></tr>
+        <tr><td>Leak rate</td><td>&lt;10⁻¹⁰ mbar·L/s (He test)</td></tr>
+        <tr><td>Actuation</td><td>Manual / Pneumatic / Solenoid</td></tr>
+        <tr><td>Cycle life</td><td>&gt;50,000 cycles (bellows qualified)</td></tr>
+      </table>
+      <div class="readiness">
+        <div class="readiness-label"><span>Development Readiness</span><span>TRL 5 → 8</span></div>
+        <div class="bar-bg"><div class="bar-fill t1" style="width:75%"></div></div>
+      </div>
+      <div class="tag-row">
+        <span class="tag green">Immediate Market</span>
+        <span class="tag orange">Normetex Replacement</span>
+        <span class="tag">Nuclear</span>
+        <span class="tag">Fusion</span>
+      </div>
+      <div class="revenue-pill">TAM ~$35M</div>
+    </div>
+
+  </div>
+
+  <div class="product-grid">
+
+    <div class="card t1">
+      <div class="card-code">ISO-TC03 · Temperature</div>
+      <div class="card-name">Mineral-Insulated Thermocouple Array</div>
+      <div class="card-subtitle">Radiation-hard temperature measurement from 4K to 800°C</div>
+      <div class="card-desc">The tritium fuel cycle spans cryogenic distillation columns at 25K all the way to breeding blanket extraction loops at 500°C. Standard thermocouples use polymer insulation that tritium destroys. <strong>ISO-TC03 uses MgO mineral insulation, all-metal sheath (316SS or Inconel 600), and radiation-hardened transmitters based on ceramic hybrid electronics.</strong> The key differentiator is a proprietary dual-point calibration algorithm that corrects for radiation-induced EMF drift — a known failure mode in nuclear thermocouples that causes 2–5°C drift per year at fusion-relevant dose rates.</div>
+      <table class="spec-table">
+        <tr><td>Types</td><td>Type K, N, and custom (Type B to 1700°C)</td></tr>
+        <tr><td>Range</td><td>4K – 800°C standard (1700°C premium)</td></tr>
+        <tr><td>Drift</td><td>&lt;0.3°C/year at 10⁴ Gy/year (corrected)</td></tr>
+        <tr><td>Sheath</td><td>316L SS, Inconel 600, or Hastelloy C276</td></tr>
+        <tr><td>Insulation</td><td>MgO (zero polymers)</td></tr>
+      </table>
+      <div class="readiness">
+        <div class="readiness-label"><span>Development Readiness</span><span>TRL 5 → 8</span></div>
+        <div class="bar-bg"><div class="bar-fill t1" style="width:72%"></div></div>
+      </div>
+      <div class="tag-row">
+        <span class="tag green">Immediate Market</span>
+        <span class="tag">Cryogenic</span>
+        <span class="tag">Blanket Loop</span>
+        <span class="tag">Storage Beds</span>
+      </div>
+      <div class="revenue-pill">TAM ~$12M</div>
+    </div>
+
+    <div class="card t1">
+      <div class="card-code">ISO-AM04 · Atmosphere Monitor</div>
+      <div class="card-name">Room-Level Tritium-in-Air Monitor</div>
+      <div class="card-subtitle">Continuous ionization chamber monitor, 1 MBq/m³ to 100 GBq/m³</div>
+      <div class="card-desc">Worker safety requires continuous real-time tritium monitoring in gloveboxes, laboratories, and facility air handling systems. Existing monitors (Berthold, Eckert & Ziegler) suffer from the <strong>"tritium memory effect"</strong> — once exposed to tritium, the ionization chamber walls become contaminated and give false high readings for months. <strong>ISO-AM04 uses a replaceable PTFE-lined inner cartridge</strong> with 90-day service intervals, combined with a novel cross-calibration algorithm using a small sealed reference source to correct for wall contamination in real time. Magnetic field tolerant design for tokamak environments.</div>
+      <table class="spec-table">
+        <tr><td>Detection range</td><td>1 MBq/m³ – 100 GBq/m³ (6 decades)</td></tr>
+        <tr><td>Response time</td><td>&lt;30 seconds (T₉₀)</td></tr>
+        <tr><td>Memory effect</td><td>Self-correcting via reference algorithm</td></tr>
+        <tr><td>Magnetic field</td><td>Operates to 100 mT fringe field</td></tr>
+        <tr><td>Output</td><td>4–20mA, HART, Modbus RTU</td></tr>
+      </table>
+      <div class="readiness">
+        <div class="readiness-label"><span>Development Readiness</span><span>TRL 4 → 7</span></div>
+        <div class="bar-bg"><div class="bar-fill t1" style="width:58%"></div></div>
+      </div>
+      <div class="tag-row">
+        <span class="tag green">Immediate Market</span>
+        <span class="tag orange">Regulatory Req.</span>
+        <span class="tag">Safety Critical</span>
+        <span class="tag">Worker Protection</span>
+      </div>
+      <div class="revenue-pill">TAM ~$25M</div>
+    </div>
+
+  </div>
+
+  <!-- ══════════════════════════════════════════════════
+       TIER 2 — DEVELOP IN PARALLEL
+  ══════════════════════════════════════════════════ -->
+  <div class="section-header" style="padding-top: 48px">
+    <span class="section-number">02</span>
+    <h2 class="section-title">Tier 2 — <strong>Develop in Parallel</strong></h2>
+    <div class="section-line"></div>
+  </div>
+
+  <div class="tier-label t2">⬤ Tier 2 &nbsp;·&nbsp; Revenue in 3–5 years &nbsp;·&nbsp; Novel engineering, known physics</div>
+
+  <div class="strategy-box">
+    <p>These products require 2–4 years of focused engineering. The underlying physics is understood, but no commercial product exists and significant materials / design work is needed. First customers are test facilities (UNITY-2, TLK Karlsruhe, Savannah River INFUSE programs) before commercial fusion plants. <strong>Each product should be co-developed with at least one national lab partner</strong> who provides test access and technical credibility.</p>
+  </div>
+
+  <div class="product-grid">
+
+    <div class="card t2">
+      <div class="card-code">ISO-FM05 · Flow</div>
+      <div class="card-name">Differential Pressure Mass Flow Controller</div>
+      <div class="card-subtitle">Tritium-rated, isotope-compensated mass flow for fuel injection</div>
+      <div class="card-desc">A simpler-than-Coriolis approach: two radiation-hard pressure transducers straddling a precision orifice plate. Mass flow is computed from the pressure drop using a compensation model that corrects for the H/D/T isotope ratio (measured by inline Raman or input from the upstream ISS). <strong>No moving parts. No vibrating tubes. No maglev bearings.</strong> Accuracy of ±0.5% is achievable with isotope correction — sufficient for plasma fueling control. The orifice plate is replaceable in 15 minutes through a glovebox-compatible interface, solving the lifetime problem.</div>
+      <table class="spec-table">
+        <tr><td>Accuracy</td><td>±0.5% of reading (with isotope input)</td></tr>
+        <tr><td>Range</td><td>0.01 – 200 Pa·m³/s (3 models)</td></tr>
+        <tr><td>Isotope comp.</td><td>Real-time via H/D/T ratio input</td></tr>
+        <tr><td>Wetted parts</td><td>316L SS, Inconel 625 orifice</td></tr>
+        <tr><td>Maintenance</td><td>Orifice plate swap via glovebox port</td></tr>
+      </table>
+      <div class="readiness">
+        <div class="readiness-label"><span>Development Readiness</span><span>TRL 3 → 6</span></div>
+        <div class="bar-bg"><div class="bar-fill t2" style="width:40%"></div></div>
+      </div>
+      <div class="tag-row">
+        <span class="tag purple">3–5yr Revenue</span>
+        <span class="tag">Plasma Fueling</span>
+        <span class="tag">DIR Loop</span>
+        <span class="tag">ISS Interface</span>
+      </div>
+      <div class="revenue-pill">TAM ~$30M</div>
+    </div>
+
+    <div class="card t2">
+      <div class="card-code">ISO-RS06 · Spectroscopy</div>
+      <div class="card-name">Inline Raman Isotope Analyzer</div>
+      <div class="card-subtitle">Real-time H/D/T composition in process gas streams</div>
+      <div class="card-desc">Raman spectroscopy is the only technique that can distinguish all six hydrogen isotopologues (H₂, HD, HT, D₂, DT, T₂) simultaneously and non-destructively. UKAEA's IS-Instruments GRADE project is advancing this but remains research-stage. <strong>ISO-RS06 is the engineered product version</strong> — a fiber-coupled hollow-core fiber Raman probe that mounts through a standard CF40 viewport, with radiation-hardened near-infrared fiber (proven at JET), remote spectrometer electronics, and factory calibration against all six isotopologues. The proprietary calibration software handles the non-linear response curves identified in TLK Karlsruhe's FTIR work.</div>
+      <table class="spec-table">
+        <tr><td>Isotopologues</td><td>All 6: H₂, HD, HT, D₂, DT, T₂</td></tr>
+        <tr><td>Accuracy</td><td>±0.2 mol% per species</td></tr>
+        <tr><td>Response time</td><td>&lt;60 seconds (continuous)</td></tr>
+        <tr><td>Fiber type</td><td>Radiation-hard HCF (hollow-core)</td></tr>
+        <tr><td>Probe interface</td><td>CF40 conflat (no glovebox needed)</td></tr>
+      </table>
+      <div class="readiness">
+        <div class="readiness-label"><span>Development Readiness</span><span>TRL 3 → 6</span></div>
+        <div class="bar-bg"><div class="bar-fill t2" style="width:38%"></div></div>
+      </div>
+      <div class="tag-row">
+        <span class="tag purple">3–5yr Revenue</span>
+        <span class="tag orange">Key Enabler</span>
+        <span class="tag">ISS</span>
+        <span class="tag">TEP</span>
+        <span class="tag">SDS</span>
+      </div>
+      <div class="revenue-pill">TAM ~$28M</div>
+    </div>
+
+  </div>
+
+  <div class="product-grid">
+
+    <div class="card t2">
+      <div class="card-code">ISO-WM07 · Safety Monitor</div>
+      <div class="card-name">Tritium-in-Water Online Monitor</div>
+      <div class="card-subtitle">Continuous HTO measurement in cooling water loops, 100 Bq/L – 1 MBq/L</div>
+      <div class="card-desc">Tritium permeates from the breeding blanket into the secondary coolant water loop. Regulatory limits require continuous online monitoring, but existing LSC methods take hours per sample. <strong>ISO-WM07 uses a flow-cell plastic scintillation fiber array</strong> adapted from recent academic work, combined with a proprietary background subtraction algorithm to handle interference from other beta emitters (C-14, Sr-90). Designed as a drop-in addition to existing water treatment instrumentation racks, with direct 4-20mA output to plant DCS. Dual-channel design (HTO and HTG separately) using gas stripper upstream of the optical cell.</div>
+      <table class="spec-table">
+        <tr><td>Detection range</td><td>100 Bq/L – 1 MBq/L</td></tr>
+        <tr><td>Measurement time</td><td>10 min (vs. 12 hr for LSC)</td></tr>
+        <tr><td>Interference</td><td>Corrected for C-14, Sr-90, Rn-222</td></tr>
+        <tr><td>Flow rate</td><td>0.1 – 1 L/min sample flow</td></tr>
+        <tr><td>Integration</td><td>4–20mA, HART, DCS compatible</td></tr>
+      </table>
+      <div class="readiness">
+        <div class="readiness-label"><span>Development Readiness</span><span>TRL 3 → 6</span></div>
+        <div class="bar-bg"><div class="bar-fill t2" style="width:42%"></div></div>
+      </div>
+      <div class="tag-row">
+        <span class="tag purple">3–5yr Revenue</span>
+        <span class="tag orange">Regulatory</span>
+        <span class="tag">Coolant Loop</span>
+        <span class="tag">Environmental</span>
+      </div>
+      <div class="revenue-pill">TAM ~$22M</div>
+    </div>
+
+    <div class="card t2">
+      <div class="card-code">ISO-CT08 · Calorimetry</div>
+      <div class="card-name">Self-Assaying Tritium Storage Bed Calorimeter</div>
+      <div class="card-subtitle">Real-time inventory measurement for ZrCo/uranium getter storage systems</div>
+      <div class="card-desc">ITER's current SDS design measures tritium inventory by helium-loop calorimetry: measure how much heat the decaying tritium generates, infer the mass. The problem is it takes 24+ hours to reach steady state. <strong>ISO-CT08 reduces this to under 2 hours</strong> using a multi-point thermal sensor array embedded directly in the bed matrix, combined with a dynamic thermal model (vs. steady-state only) that can extrapolate to final reading early. The "self-assaying" concept — where the bed itself is the primary measurement device without needing to transfer tritium — is the key innovation. ±0.5g accuracy at 100g inventory in 2 hours.</div>
+      <table class="spec-table">
+        <tr><td>Accuracy</td><td>±0.5g at 100g inventory</td></tr>
+        <tr><td>Measurement time</td><td>&lt;2 hours (vs. 24hr steady-state)</td></tr>
+        <tr><td>Method</td><td>Dynamic multi-point calorimetry</td></tr>
+        <tr><td>Bed compat.</td><td>ZrCo, ZrNi, U beds</td></tr>
+        <tr><td>Non-invasive</td><td>Yes — no tritium transfer required</td></tr>
+      </table>
+      <div class="readiness">
+        <div class="readiness-label"><span>Development Readiness</span><span>TRL 3 → 6</span></div>
+        <div class="bar-bg"><div class="bar-fill t2" style="width:36%"></div></div>
+      </div>
+      <div class="tag-row">
+        <span class="tag purple">3–5yr Revenue</span>
+        <span class="tag orange">Accountancy</span>
+        <span class="tag">SDS</span>
+        <span class="tag">Non-proliferation</span>
+      </div>
+      <div class="revenue-pill">TAM ~$20M</div>
+    </div>
+
+  </div>
+
+  <!-- ══════════════════════════════════════════════════
+       TIER 3 — LONGER-TERM / PLATFORM PRODUCTS
+  ══════════════════════════════════════════════════ -->
+  <div class="section-header" style="padding-top: 48px">
+    <span class="section-number">03</span>
+    <h2 class="section-title">Tier 3 — <strong>Platform Products</strong></h2>
+    <div class="section-line"></div>
+  </div>
+
+  <div class="tier-label t3">⬤ Tier 3 &nbsp;·&nbsp; Revenue in 5–10 years &nbsp;·&nbsp; Novel physics required, high value</div>
+
+  <div class="strategy-box">
+    <p>These are higher-risk, higher-value products that require either novel physics development or a fusion test facility to validate against. They represent the long-term competitive moat — products that competitors cannot easily replicate because they require deep, fusion-specific IP. <strong>Start R&D on these in year 2–3, fund with Tier 1/2 revenue and government grants.</strong></p>
+  </div>
+
+  <div class="product-grid triple">
+
+    <div class="card t3">
+      <div class="card-code">ISO-DA09 · Accountancy</div>
+      <div class="card-name">Tritium Digital Twin & Accountancy Platform</div>
+      <div class="card-subtitle">Real-time tritium inventory tracking and regulatory reporting software</div>
+      <div class="card-desc">A software platform that integrates data from all ISO sensors across the fuel cycle, runs a real-time dynamic inventory model, and generates regulatory-compliant tritium accountancy reports. <strong>The "operating system" for the tritium fuel cycle.</strong> Each hardware product becomes a data source that feeds this platform, creating lock-in and recurring revenue.</div>
+      <div class="readiness">
+        <div class="readiness-label"><span>Readiness</span><span>TRL 2 → 5</span></div>
+        <div class="bar-bg"><div class="bar-fill t3" style="width:22%"></div></div>
+      </div>
+      <div class="tag-row">
+        <span class="tag green">SaaS Revenue</span>
+        <span class="tag">Regulatory</span>
+        <span class="tag">IAEA Safeguards</span>
+      </div>
+      <div class="revenue-pill">TAM ~$45M</div>
+    </div>
+
+    <div class="card t3">
+      <div class="card-code">ISO-PS10 · Permeation</div>
+      <div class="card-name">In-Pipe Tritium Permeation Sensor</div>
+      <div class="card-subtitle">Continuous wall-loss measurement for tritium permeation accounting</div>
+      <div class="card-desc">Clamps onto the outside of process piping. Uses a thin niobium membrane and ion pump on the outside to detect tritium diffusing through the pipe wall. <strong>Quantifies how much tritium is being lost to permeation in real time</strong> — currently not measured at all. Critical for closing the inventory balance to the required 0.05% loss limit.</div>
+      <div class="readiness">
+        <div class="readiness-label"><span>Readiness</span><span>TRL 2 → 5</span></div>
+        <div class="bar-bg"><div class="bar-fill t3" style="width:20%"></div></div>
+      </div>
+      <div class="tag-row">
+        <span class="tag green">Novel Physics</span>
+        <span class="tag">Permeation Barrier</span>
+        <span class="tag">Inventory</span>
+      </div>
+      <div class="revenue-pill">TAM ~$18M</div>
+    </div>
+
+    <div class="card t3">
+      <div class="card-code">ISO-GS11 · Graphene</div>
+      <div class="card-name">Graphene Proton Isotope Ratio Sensor</div>
+      <div class="card-subtitle">Electrochemical H/D/T ratio sensor using quantum tunneling selectivity</div>
+      <div class="card-desc">Uses graphene's quantum-tunneling selectivity (separation factor ~30 for H vs T) to provide an independent cross-check on Raman isotope ratio measurements. <strong>Pure electronic readout</strong> — no laser, no optics, no moving parts. Highly compact and radiation-hard. Currently at TRL 2; the University of Manchester graphene work provides the underlying science.</div>
+      <div class="readiness">
+        <div class="readiness-label"><span>Readiness</span><span>TRL 2 → 4</span></div>
+        <div class="bar-bg"><div class="bar-fill t3" style="width:15%"></div></div>
+      </div>
+      <div class="tag-row">
+        <span class="tag orange">High Risk</span>
+        <span class="tag purple">High Value</span>
+        <span class="tag">Novel IP</span>
+      </div>
+      <div class="revenue-pill">TAM ~$20M</div>
+    </div>
+
+  </div>
+
+  <div class="product-grid">
+
+    <div class="card t3">
+      <div class="card-code">ISO-HC12 · Hydrogen Sensor</div>
+      <div class="card-name">Ceramic Hydrogen Isotope Concentration Sensor</div>
+      <div class="card-subtitle">Electrochemical sensor for dissolved H/D/T concentration in liquid metal loops</div>
+      <div class="card-desc">Measures the concentration of dissolved hydrogen isotopes in flowing LiPb (lithium-lead) breeding blanket coolant — a measurement currently done only by offline extraction and analysis, taking hours. Based on yttria-stabilized zirconia (YSZ) proton-conducting ceramic electrolyte. A potentiometric cell generates a Nernst voltage proportional to hydrogen partial pressure in the liquid metal. <strong>Kyoto Fusioneering's UNITY-1 facility uses a ceramic hydrogen sensor prototype — this is the fusion-qualified commercial version.</strong></div>
+      <table class="spec-table">
+        <tr><td>Medium</td><td>Liquid LiPb, liquid Li, molten salt</td></tr>
+        <tr><td>Temperature</td><td>300 – 700°C operational</td></tr>
+        <tr><td>Response</td><td>&lt;5 minutes (vs. hours offline)</td></tr>
+        <tr><td>Principle</td><td>Nernst (YSZ electrolyte)</td></tr>
+        <tr><td>Isotope spec.</td><td>Via graphene barrier layer (ISO-GS11 IP)</td></tr>
+      </table>
+      <div class="readiness">
+        <div class="readiness-label"><span>Readiness</span><span>TRL 3 → 6</span></div>
+        <div class="bar-bg"><div class="bar-fill t3" style="width:32%"></div></div>
+      </div>
+      <div class="tag-row">
+        <span class="tag green">KF Prototype Exists</span>
+        <span class="tag">Blanket Loop</span>
+        <span class="tag">TBR Monitoring</span>
+      </div>
+      <div class="revenue-pill">TAM ~$22M</div>
+    </div>
+
+    <div class="card t3">
+      <div class="card-code">ISO-RC13 · Remote Control</div>
+      <div class="card-name">Radiation-Hard Process Control Interface</div>
+      <div class="card-subtitle">DCS/PLC integration module for tritium facility automation</div>
+      <div class="card-desc">All tritium instrumentation generates signals that need to reach a plant control system. The problem: signal cables running from inside a tritium glove box to an external DCS must themselves be radiation-compatible, hermetically sealed at every penetration, and electrically isolated to prevent tritium from migrating along conductor surfaces. <strong>ISO-RC13 is a standardized I/O module</strong> designed specifically for tritium plant penetration panels — fiber optic signal transmission (eliminates migration path), hermetic glass-ceramic connectors, and a standardized software driver package for Siemens PCS7, DeltaV, and Ignition SCADA systems.</div>
+      <div class="readiness">
+        <div class="readiness-label"><span>Readiness</span><span>TRL 3 → 6</span></div>
+        <div class="bar-bg"><div class="bar-fill t3" style="width:35%"></div></div>
+      </div>
+      <div class="tag-row">
+        <span class="tag green">Cross-cutting</span>
+        <span class="tag">DCS Integration</span>
+        <span class="tag">All Facilities</span>
+      </div>
+      <div class="revenue-pill">TAM ~$15M</div>
+    </div>
+
+  </div>
+
+  <!-- MARKET TABLE -->
+  <div class="section-header" style="padding-top: 48px">
+    <span class="section-number">04</span>
+    <h2 class="section-title">Portfolio <strong>Summary</strong></h2>
+    <div class="section-line"></div>
+  </div>
+
+  <table class="market-table">
+    <thead>
+      <tr>
+        <th>Product</th>
+        <th>Description</th>
+        <th>First Revenue</th>
+        <th>TRL Now</th>
+        <th>TAM</th>
+        <th>Competitor?</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>ISO-PG01</td>
+        <td>All-metal pressure gauge</td>
+        <td>Yr 1</td>
+        <td><span class="trl-dot trl-mid"></span>4</td>
+        <td class="tam">$18M</td>
+        <td style="color:var(--safe);font-size:12px">Weak (MKS discontinued)</td>
+      </tr>
+      <tr>
+        <td>ISO-VB02</td>
+        <td>Bellows valve range</td>
+        <td>Yr 1</td>
+        <td><span class="trl-dot trl-high"></span>5</td>
+        <td class="tam">$35M</td>
+        <td style="color:var(--warn);font-size:12px">Rotarex (limited scale)</td>
+      </tr>
+      <tr>
+        <td>ISO-TC03</td>
+        <td>MI thermocouple array</td>
+        <td>Yr 1</td>
+        <td><span class="trl-dot trl-high"></span>5</td>
+        <td class="tam">$12M</td>
+        <td style="color:var(--safe);font-size:12px">None qualified for fusion</td>
+      </tr>
+      <tr>
+        <td>ISO-AM04</td>
+        <td>Air tritium monitor</td>
+        <td>Yr 2</td>
+        <td><span class="trl-dot trl-mid"></span>4</td>
+        <td class="tam">$25M</td>
+        <td style="color:var(--warn);font-size:12px">Berthold (memory effect flaw)</td>
+      </tr>
+      <tr>
+        <td>ISO-FM05</td>
+        <td>ΔP mass flow controller</td>
+        <td>Yr 3</td>
+        <td><span class="trl-dot trl-low"></span>3</td>
+        <td class="tam">$30M</td>
+        <td style="color:var(--safe);font-size:12px">None</td>
+      </tr>
+      <tr>
+        <td>ISO-RS06</td>
+        <td>Raman isotope analyzer</td>
+        <td>Yr 4</td>
+        <td><span class="trl-dot trl-low"></span>3</td>
+        <td class="tam">$28M</td>
+        <td style="color:var(--warn);font-size:12px">IS-Instruments (research stage)</td>
+      </tr>
+      <tr>
+        <td>ISO-WM07</td>
+        <td>Water tritium monitor</td>
+        <td>Yr 3</td>
+        <td><span class="trl-dot trl-low"></span>3</td>
+        <td class="tam">$22M</td>
+        <td style="color:var(--warn);font-size:12px">E&Z (slow batch method only)</td>
+      </tr>
+      <tr>
+        <td>ISO-CT08</td>
+        <td>Storage bed calorimeter</td>
+        <td>Yr 4</td>
+        <td><span class="trl-dot trl-low"></span>3</td>
+        <td class="tam">$20M</td>
+        <td style="color:var(--safe);font-size:12px">None (ITER uses bespoke only)</td>
+      </tr>
+      <tr>
+        <td>ISO-DA09</td>
+        <td>Digital twin platform</td>
+        <td>Yr 5</td>
+        <td><span class="trl-dot trl-low"></span>2</td>
+        <td class="tam">$45M</td>
+        <td style="color:var(--safe);font-size:12px">None</td>
+      </tr>
+      <tr>
+        <td>ISO-PS10</td>
+        <td>Permeation sensor</td>
+        <td>Yr 6</td>
+        <td><span class="trl-dot trl-low"></span>2</td>
+        <td class="tam">$18M</td>
+        <td style="color:var(--safe);font-size:12px">None</td>
+      </tr>
+      <tr>
+        <td>ISO-GS11</td>
+        <td>Graphene isotope sensor</td>
+        <td>Yr 7</td>
+        <td><span class="trl-dot trl-low"></span>2</td>
+        <td class="tam">$20M</td>
+        <td style="color:var(--safe);font-size:12px">None</td>
+      </tr>
+      <tr>
+        <td>ISO-HC12</td>
+        <td>LiPb hydrogen sensor</td>
+        <td>Yr 5</td>
+        <td><span class="trl-dot trl-low"></span>3</td>
+        <td class="tam">$22M</td>
+        <td style="color:var(--warn);font-size:12px">KF prototype (not commercial)</td>
+      </tr>
+      <tr>
+        <td>ISO-RC13</td>
+        <td>Rad-hard DCS interface</td>
+        <td>Yr 3</td>
+        <td><span class="trl-dot trl-low"></span>3</td>
+        <td class="tam">$15M</td>
+        <td style="color:var(--safe);font-size:12px">None tritium-specific</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- ROADMAP -->
+  <div class="section-header">
+    <span class="section-number">05</span>
+    <h2 class="section-title">Development <strong>Roadmap</strong></h2>
+    <div class="section-line"></div>
+  </div>
+
+  <div class="roadmap">
+    <div class="phase-time">2025–2026</div>
+    <div class="phase-content">
+      <div class="phase-title">Foundation — Fund with grants, sell into nuclear market</div>
+      <ul class="phase-items">
+        <li class="launch">Launch ISO-VB02 Valves</li>
+        <li class="launch">Launch ISO-TC03 Thermocouples</li>
+        <li class="launch">Launch ISO-PG01 Pressure Gauges</li>
+        <li class="dev">Dev ISO-AM04 Air Monitor</li>
+        <li class="dev">Dev ISO-RC13 DCS Interface</li>
+        <li class="research">Research ISO-RS06 Raman</li>
+      </ul>
+    </div>
+
+    <div class="phase-time">2027–2028</div>
+    <div class="phase-content">
+      <div class="phase-title">UNITY-2 — First fusion customer, validate advanced products</div>
+      <ul class="phase-items">
+        <li class="launch">Launch ISO-AM04 Monitor</li>
+        <li class="launch">Launch ISO-FM05 Flow Controller</li>
+        <li class="launch">Launch ISO-RC13 DCS Interface</li>
+        <li class="dev">Dev ISO-RS06 Raman Analyzer</li>
+        <li class="dev">Dev ISO-WM07 Water Monitor</li>
+        <li class="dev">Dev ISO-CT08 Calorimeter</li>
+        <li class="research">Research ISO-DA09 Digital Twin</li>
+      </ul>
+    </div>
+
+    <div class="phase-time">2029–2031</div>
+    <div class="phase-content">
+      <div class="phase-title">Pilot Plants — First fusion power plant customers (CFS ARC, STEP)</div>
+      <ul class="phase-items">
+        <li class="launch">Launch ISO-RS06 Raman</li>
+        <li class="launch">Launch ISO-WM07 Water Monitor</li>
+        <li class="launch">Launch ISO-CT08 Calorimeter</li>
+        <li class="launch">Launch ISO-HC12 LiPb Sensor</li>
+        <li class="dev">Dev ISO-DA09 Digital Twin</li>
+        <li class="dev">Dev ISO-PS10 Permeation Sensor</li>
+        <li class="research">Research ISO-GS11 Graphene</li>
+      </ul>
+    </div>
+
+    <div class="phase-time">2032+</div>
+    <div class="phase-content">
+      <div class="phase-title">Scale — Commercial fusion fleet, platform becomes dominant</div>
+      <ul class="phase-items">
+        <li class="launch">Launch ISO-DA09 Digital Twin</li>
+        <li class="launch">Launch ISO-PS10 Permeation</li>
+        <li class="launch">Launch ISO-GS11 Graphene</li>
+        <li class="launch">Fleet service contracts</li>
+        <li class="dev">Next-gen AI accountancy</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- BUSINESS MODEL -->
+  <div class="section-header">
+    <span class="section-number">06</span>
+    <h2 class="section-title">Business <strong>Model</strong></h2>
+    <div class="section-line"></div>
+  </div>
+
+  <div class="biz-grid">
+    <div class="biz-cell">
+      <div class="biz-icon">⚙️</div>
+      <div class="biz-title">Hardware Sales</div>
+      <div class="biz-desc">Component sales to fuel cycle system integrators (Kyoto Fusioneering, CNL, ITER) and directly to fusion companies. ASPs range from $8k (thermocouples) to $180k (Raman analyzer). Typical fuel cycle requires 40–120 instrumentation points.</div>
+    </div>
+    <div class="biz-cell">
+      <div class="biz-icon">🔄</div>
+      <div class="biz-title">Service & Recalibration</div>
+      <div class="biz-desc">Tritium instruments require periodic recalibration against traceable standards — and those standards must themselves be maintained in tritium environments. Annual recalibration contracts at 15–25% of hardware value create predictable recurring revenue with high switching costs.</div>
+    </div>
+    <div class="biz-cell">
+      <div class="biz-icon">💻</div>
+      <div class="biz-title">Software Platform (ISO-DA09)</div>
+      <div class="biz-desc">SaaS licensing of the digital twin / accountancy platform. Priced per facility ($200k–$800k/year) based on tritium inventory scale. Every hardware product becomes a node in this network. Regulatory pressure (IAEA safeguards, NRC licensing) makes this non-optional for commercial fusion plants.</div>
+    </div>
+    <div class="biz-cell">
+      <div class="biz-icon">🏛️</div>
+      <div class="biz-title">Government R&D Contracts</div>
+      <div class="biz-desc">DOE INFUSE program, UKAEA Fusion Industry Programme, EU Fusion for Energy grants. Each Tier 3 product has a natural government R&D funding path. This non-dilutive capital funds the high-risk products while Tier 1/2 hardware generates commercial revenue.</div>
+    </div>
+    <div class="biz-cell">
+      <div class="biz-icon">🧪</div>
+      <div class="biz-title">Test & Qualification Services</div>
+      <div class="biz-desc">Third-party component qualification using the tritium test protocols developed for ISO products. Pump manufacturers, valve suppliers, and seal vendors all need tritium exposure testing. ISOTRACE's test infrastructure (built for product development) becomes a revenue-generating service for the broader supply chain.</div>
+    </div>
+    <div class="biz-cell">
+      <div class="biz-icon">🌐</div>
+      <div class="biz-title">IP Licensing</div>
+      <div class="biz-desc">The graphene isotope sensor (ISO-GS11) and permeation sensor (ISO-PS10) represent genuinely novel physics that larger industrial instrument companies (Emerson, ABB, Yokogawa) cannot quickly replicate. Long-term licensing deals provide upside beyond ISOTRACE's direct sales capacity.</div>
+    </div>
+  </div>
+
+  <!-- COMPETITIVE MOAT -->
+  <div class="section-header">
+    <span class="section-number">07</span>
+    <h2 class="section-title">Competitive <strong>Moat</strong></h2>
+    <div class="section-line"></div>
+  </div>
+
+  <div class="moat-grid">
+    <div class="moat-cell">
+      <span class="moat-score">10⁻¹⁰</span>
+      <div class="moat-label">Helium leak rate required — forces all-metal design expertise that takes years to acquire</div>
+    </div>
+    <div class="moat-cell">
+      <span class="moat-score">6</span>
+      <div class="moat-label">Hydrogen isotopologues that must be simultaneously distinguished — only Raman achieves this</div>
+    </div>
+    <div class="moat-cell">
+      <span class="moat-score">43+</span>
+      <div class="moat-label">Fusion companies needing fuel cycle instrumentation by 2030 — captive addressable market</div>
+    </div>
+    <div class="moat-cell">
+      <span class="moat-score">12mo</span>
+      <div class="moat-label">Typical tritium instrument lead time today — delivery speed becomes a competitive advantage</div>
+    </div>
+    <div class="moat-cell">
+      <span class="moat-score">0</span>
+      <div class="moat-label">Competitors building a complete tritium instrumentation suite — the market is entirely uncontested at portfolio level</div>
+    </div>
+  </div>
+
+  <!-- RISKS -->
+  <div class="section-header">
+    <span class="section-number">08</span>
+    <h2 class="section-title">Key <strong>Risks</strong></h2>
+    <div class="section-line"></div>
+  </div>
+
+  <div style="margin-bottom: 40px">
+    <div class="risk-row">
+      <div class="risk-name">Fusion timeline slippage</div>
+      <div class="risk-desc">Commercial fusion plants delayed beyond 2035. Mitigation: Tier 1 products generate revenue from existing fission/nuclear tritium market regardless of fusion timeline.</div>
+      <div class="risk-level med">MEDIUM</div>
+    </div>
+    <div class="risk-row">
+      <div class="risk-name">Tritium access for testing</div>
+      <div class="risk-desc">Validating products requires tritium exposure — access gated by national labs. Mitigation: Establish partnership with CNL/SRNL early; design deuterium-surrogate testing protocols for pre-tritium validation stages.</div>
+      <div class="risk-level high">HIGH</div>
+    </div>
+    <div class="risk-row">
+      <div class="risk-name">Nuclear regulatory burden</div>
+      <div class="risk-desc">NRC/nuclear authority qualification adds 2–4 years to product timelines. Mitigation: Design products to existing qualified standards (ASME, ISA-S67) from day one; hire regulatory affairs expertise early.</div>
+      <div class="risk-level med">MEDIUM</div>
+    </div>
+    <div class="risk-row">
+      <div class="risk-name">Large incumbent entry</div>
+      <div class="risk-desc">Emerson, ABB, or Yokogawa decides to build tritium instrumentation. Mitigation: These companies won't move until market is proven; ISOTRACE will be 5+ years ahead with IP, customer relationships, and regulatory approvals.</div>
+      <div class="risk-level low">LOW</div>
+    </div>
+    <div class="risk-row">
+      <div class="risk-name">ISO-GS11 graphene physics</div>
+      <div class="risk-desc">Graphene isotope separation may not work at process conditions. Mitigation: This is one of 12 products; portfolio is not dependent on it. Fund as a long-term R&D bet, not a core product.</div>
+      <div class="risk-level high">HIGH (contained)</div>
+    </div>
+    <div class="risk-row">
+      <div class="risk-name">Dual-use / export controls</div>
+      <div class="risk-desc">Tritium instrumentation may be subject to nuclear export controls, limiting international sales. Mitigation: Structure IP ownership and manufacturing in a single jurisdiction (UK or Canada recommended); engage export control counsel early.</div>
+      <div class="risk-level med">MEDIUM</div>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-logo">ISOTRACE</div>
+    <div class="footer-note">Confidential &nbsp;·&nbsp; Product Portfolio v1.0 &nbsp;·&nbsp; April 2026</div>
+  </footer>
+
+</div>
+</body>
+</html>
